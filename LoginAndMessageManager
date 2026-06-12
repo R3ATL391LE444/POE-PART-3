@@ -1,0 +1,80 @@
+package quickchat; // Unified package name so it talks to Login and MessageManager
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class Message {
+
+    private String messageID;
+    private int messageNumber;
+    private String recipient;
+    private String messageText;
+    private String messageHash;
+    private String messageStatus;
+
+    // Global memory components for tracking state across the application
+    private static int totalMessagesSent = 0;
+    private static List<Message> sentMessages = new ArrayList<>();
+    private static List<Message> disregardedMessages = new ArrayList<>();
+    private static List<Message> storedMessages = new ArrayList<>();
+    private static List<String> messageHashes = new ArrayList<>();
+    private static List<String> messageIDs = new ArrayList<>();
+
+    // Parameterized Constructor
+    public Message(int messageNumber, String recipient, String messageText) {
+        this.messageNumber = messageNumber;
+        this.recipient = recipient;
+        this.messageText = messageText;
+        this.messageID = generateMessageID();
+        this.messageHash = createMessageHash();
+        this.messageStatus = "PENDING";
+    }
+
+    // Default Constructor
+    public Message() {
+        this.messageID = "";
+        this.messageNumber = 0;
+        this.recipient = "";
+        this.messageText = "";
+        this.messageHash = "";
+        this.messageStatus = "PENDING";
+    }
+
+    private String generateMessageID() {
+        Random random = new Random();
+        // Generates a random 10 digit number safely bounded
+        long id = (long)(random.nextDouble() * 9000000000L) + 1000000000L;
+        return String.valueOf(id);
+    }
+
+    public boolean checkMessageID() {
+        if (messageID == null) {
+            return false;
+        }
+        return messageID.length() <= 10;
+    }
+
+    public String checkRecipientCell() {
+        if (recipient == null) {
+            return "Cell phone number is incorrectly formatted or does not contain an international code. Please correct the number and try again.";
+        }
+        String regex = "^\\+[0-9]{10,12}$";
+        if (recipient.matches(regex)) {
+            return "Cell phone number successfully captured.";
+        }
+        return "Cell phone number is incorrectly formatted or does not contain an international code. Please correct the number and try again.";
+    }
+
+    public String createMessageHash() {
+        if (messageID == null || messageID.length() < 2 || messageText == null || messageText.trim().isEmpty()) {
+            return "";
+        }
+        String firstTwoDigits = messageID.substring(0, 2);
+        String[] words = messageText.trim().split("\\s+");
+        
+        String firstWord = words[0];
+        String lastWord = words[words.length - 1];
+
+        String hash = firstTwoDigits + ":" + messageNumber + ":" + firstWord + lastWord;
+        return hash.
